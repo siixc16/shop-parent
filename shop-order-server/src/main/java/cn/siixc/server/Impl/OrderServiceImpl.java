@@ -25,23 +25,10 @@ public class OrderServiceImpl implements IOrderService {
     private OrderDao orderDao;
     @Autowired
     private RestTemplate restTemplate;
-    @Autowired
-    private DiscoveryClient discoveryClient;
-    int i = 0;
-
     @Override
     public Order createOrder(Long productId, Long userId) {
-        log.info("接收到{}号商品的下单请求，接下来调用商品微服务查询此商品信息", productId);
-        List<ServiceInstance> instances = discoveryClient.getInstances("product-server");
-        i++;
-        int index = i% instances.size();
-        ServiceInstance serviceInstance = instances.get(index);
-        String host = serviceInstance.getHost();
-        int port = serviceInstance.getPort();
-        String url = "http://" + host + ":" + port + "/product/" + productId;
-        log.info("服务的地址:{}", url);
-        Product product = restTemplate.getForObject(url, Product.class);
-        log.info("查询到{}号商品的信息,内容是:{}", product, JSON.toJSONString(product));
+        Product product = restTemplate.getForObject("http://product-service/product/"+productId,Product.class);
+        log.info("查询到{}号商品的信息,内容是:{}", productId, JSON.toJSONString(product));
         Order order = new Order();
         order.setUid(userId);
         order.setPid(productId);
